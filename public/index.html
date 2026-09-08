@@ -20,6 +20,7 @@
   --green-dim: rgba(0,255,136,0.5);
   --amber: #ffaa00;
   --red: #ff3355;
+  --purple: #a855f7;
   --text: #c8dce8;
   --text-dim: #5a7a8a;
   --text-bright: #e8f4ff;
@@ -38,7 +39,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Background grid */
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: 0;
@@ -59,7 +59,7 @@ body::after {
 
 .app { position: relative; z-index: 1; display: grid; grid-template-columns: 320px 1fr 360px; grid-template-rows: auto 1fr auto; height: 100vh; gap: 0; }
 
-/* ─── HEADER ─── */
+/* HEADER */
 .header {
   grid-column: 1 / -1;
   display: flex; align-items: center;
@@ -123,7 +123,7 @@ body::after {
 .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
 .status-dot.idle { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
 
-/* ─── PANELS ─── */
+/* PANELS */
 .panel {
   background: var(--panel);
   border: 1px solid var(--panel-border);
@@ -150,7 +150,7 @@ body::after {
 
 .panel-body { padding: 14px 16px; }
 
-/* ─── LEFT SIDEBAR ─── */
+/* LEFT SIDEBAR */
 .sidebar-left { display: flex; flex-direction: column; gap: 1px; overflow-y: auto; padding: 12px; }
 
 .command-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -187,8 +187,10 @@ body::after {
 .tool-tag.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,0.1); box-shadow: 0 0 8px rgba(0,240,255,0.1); }
 .tool-tag.browser { border-color: rgba(224,86,160,0.3); }
 .tool-tag.browser:hover, .tool-tag.browser.active { border-color: #e056a0; color: #e056a0; background: rgba(224,86,160,0.1); }
+.tool-tag.computer { border-color: rgba(168,85,247,0.3); }
+.tool-tag.computer:hover, .tool-tag.computer.active { border-color: var(--purple); color: var(--purple); background: rgba(168,85,247,0.1); }
 
-/* ─── CENTER ─── */
+/* CENTER */
 .center { display: flex; flex-direction: column; overflow: hidden; }
 
 .viz-area {
@@ -299,7 +301,7 @@ body::after {
 .data-table td { padding: 6px 10px; border-bottom: 1px solid rgba(0,240,255,0.05); }
 .data-table tr:hover td { background: rgba(0,240,255,0.04); }
 
-/* ─── BOTTOM BAR ─── */
+/* BOTTOM BAR */
 .bottom-bar {
   grid-column: 1 / -1;
   display: flex; align-items: center; justify-content: center;
@@ -317,7 +319,7 @@ body::after {
 .bar-btn.danger { border-color: rgba(255,51,85,0.3); color: var(--red); }
 .bar-btn.danger:hover { border-color: var(--red); background: rgba(255,51,85,0.1); }
 
-/* ─── RIGHT SIDEBAR ─── */
+/* RIGHT SIDEBAR */
 .sidebar-right { display: flex; flex-direction: column; overflow-y: auto; padding: 12px; gap: 1px; }
 
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
@@ -346,6 +348,129 @@ body::after {
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,240,255,0.2); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ─── VOICE UI ─── */
+.voice-btn {
+  position: relative;
+  padding: 7px 18px;
+  font-family: var(--font-display); font-size: 11px; font-weight: 600;
+  letter-spacing: 1.5px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(0,240,255,0.1));
+  border: 1px solid var(--purple);
+  border-radius: 3px;
+  color: var(--purple);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.voice-btn:hover {
+  background: rgba(168,85,247,0.2);
+  box-shadow: 0 0 20px rgba(168,85,247,0.2);
+}
+.voice-btn.listening {
+  animation: voicePulse 1s ease-in-out infinite;
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(255,51,85,0.15);
+}
+.voice-btn.speaking {
+  animation: voicePulse 0.8s ease-in-out infinite;
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0,240,255,0.15);
+}
+@keyframes voicePulse {
+  0%,100% { box-shadow: 0 0 8px rgba(168,85,247,0.3); }
+  50% { box-shadow: 0 0 24px rgba(168,85,247,0.6); }
+}
+
+.voice-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,14,23,0.95);
+  backdrop-filter: blur(12px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+.voice-overlay.visible { display: flex; }
+
+.voice-orb-container {
+  position: relative;
+  width: 200px; height: 200px;
+}
+.voice-orb {
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  border: 2px solid var(--cyan-dim);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  transition: all 0.3s;
+}
+.voice-orb.listening-orb {
+  border-color: var(--red);
+  box-shadow: 0 0 40px rgba(255,51,85,0.3), 0 0 80px rgba(255,51,85,0.1);
+}
+.voice-orb.speaking-orb {
+  border-color: var(--cyan);
+  box-shadow: 0 0 40px rgba(0,240,255,0.3), 0 0 80px rgba(0,240,255,0.1);
+}
+.voice-orb.processing-orb {
+  border-color: var(--amber);
+  box-shadow: 0 0 40px rgba(255,170,0,0.3);
+}
+.voice-orb::before, .voice-orb::after {
+  content: ''; position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0,240,255,0.1);
+}
+.voice-orb::before { inset: -12px; animation: logoSpin 15s linear infinite; }
+.voice-orb::after { inset: -24px; animation: logoSpin 25s linear infinite reverse; }
+
+.voice-waveform {
+  width: 120px; height: 60px;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+}
+.voice-waveform .bar {
+  width: 4px;
+  background: var(--cyan);
+  border-radius: 2px;
+  transition: height 0.05s;
+  min-height: 4px;
+}
+
+.voice-status {
+  font-family: var(--font-display);
+  font-size: 14px; letter-spacing: 3px;
+  color: var(--cyan);
+}
+
+.voice-transcript {
+  font-family: var(--font-mono);
+  font-size: 16px; color: var(--text-bright);
+  max-width: 600px; text-align: center;
+  min-height: 24px;
+  line-height: 1.6;
+}
+
+.voice-hint {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.voice-close-btn {
+  position: absolute; top: 20px; right: 24px;
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--font-mono); font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.voice-close-btn:hover { border-color: var(--red); color: var(--red); }
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -357,7 +482,7 @@ body::after {
 </head>
 <body>
 <div class="app">
-  <!-- ═══ HEADER ═══ -->
+  <!-- HEADER -->
   <div class="header">
     <div class="logo-area">
       <div class="logo-icon">
@@ -382,7 +507,7 @@ body::after {
     </div>
   </div>
 
-  <!-- ═══ LEFT SIDEBAR ═══ -->
+  <!-- LEFT SIDEBAR -->
   <div class="sidebar-left">
     <div class="panel" style="margin-bottom:8px">
       <div class="panel-head">DEEP CHANNEL</div>
@@ -406,7 +531,7 @@ body::after {
     </div>
   </div>
 
-  <!-- ═══ CENTER ═══ -->
+  <!-- CENTER -->
   <div class="center">
     <div class="viz-area">
       <canvas class="neural-canvas" id="neuralCanvas"></canvas>
@@ -419,12 +544,12 @@ body::after {
         <span class="response-badge ok" id="response-badge" style="display:none">READY</span>
       </div>
       <div class="response-content" id="response-content">
-        <span style="color:var(--text-dim)">// Pilih tool dari sidebar kiri atau klik aksi di panel kanan untuk memulai.</span>
+        <span style="color:var(--text-dim)">// Pilih tool dari sidebar atau tekan VOICE untuk perintah suara JARVIS.</span>
       </div>
     </div>
   </div>
 
-  <!-- ═══ RIGHT SIDEBAR ═══ -->
+  <!-- RIGHT SIDEBAR -->
   <div class="sidebar-right">
     <div class="panel" style="margin-bottom:8px">
       <div class="panel-head">ACTION LOG <span class="live">LIVE TELEMETRY</span></div>
@@ -442,14 +567,28 @@ body::after {
     </div>
   </div>
 
-  <!-- ═══ BOTTOM BAR ═══ -->
+  <!-- BOTTOM BAR -->
   <div class="bottom-bar">
-    <div class="bar-btn accent" onclick="showAllTools()">Show Commands</div>
-    <div class="bar-btn" onclick="execQuick('device_info')">Device Info</div>
-    <div class="bar-btn" onclick="execQuick('disk_usage')">Disk Usage</div>
-    <div class="bar-btn" onclick="execQuick('search_web')">Search Web</div>
+    <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">VOICE</button>
+    <div class="bar-btn accent" onclick="showAllTools()">Commands</div>
+    <div class="bar-btn" onclick="execQuick('device_info')">Device</div>
+    <div class="bar-btn" onclick="execQuick('system_load')">System</div>
+    <div class="bar-btn" onclick="execQuick('disk_usage')">Disk</div>
     <div class="bar-btn danger" onclick="closeForm()">Stop</div>
   </div>
+</div>
+
+<!-- VOICE OVERLAY -->
+<div class="voice-overlay" id="voiceOverlay">
+  <button class="voice-close-btn" onclick="stopVoice()">ESC / CLOSE</button>
+  <div class="voice-orb-container">
+    <div class="voice-orb" id="voiceOrb">
+      <div class="voice-waveform" id="voiceWaveform"></div>
+    </div>
+  </div>
+  <div class="voice-status" id="voiceStatus">INITIALIZING</div>
+  <div class="voice-transcript" id="voiceTranscript"></div>
+  <div class="voice-hint">Tekan ESC untuk keluar &middot; Bicara perintah Anda, Sir.</div>
 </div>
 
 <script>
@@ -458,6 +597,372 @@ let allSkills = [];
 let activeTool = null;
 let eventLog = [];
 
+// ─── VOICE SYSTEM (JARVIS) ───
+const JARVIS = {
+  recognition: null,
+  synth: window.speechSynthesis,
+  isListening: false,
+  isSpeaking: false,
+  voice: null,
+  waveformBars: 16,
+  analyser: null,
+  audioCtx: null,
+  micStream: null,
+
+  init() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      addEvent('warn', 'Voice: SpeechRecognition tidak didukung browser ini');
+      return false;
+    }
+
+    this.recognition = new SpeechRecognition();
+    this.recognition.lang = 'id-ID';
+    this.recognition.continuous = false;
+    this.recognition.interimResults = true;
+    this.recognition.maxAlternatives = 1;
+
+    this.recognition.onresult = (e) => {
+      let interim = '';
+      let final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      const display = final || interim;
+      document.getElementById('voiceTranscript').textContent = display;
+      if (final) {
+        this.handleCommand(final.trim());
+      }
+    };
+
+    this.recognition.onend = () => {
+      if (this.isListening && !this.isSpeaking) {
+        try { this.recognition.start(); } catch {}
+      }
+    };
+
+    this.recognition.onerror = (e) => {
+      if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        addEvent('warn', `Voice error: ${e.error}`);
+      }
+    };
+
+    // Build waveform bars
+    const wf = document.getElementById('voiceWaveform');
+    wf.innerHTML = '';
+    for (let i = 0; i < this.waveformBars; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = '4px';
+      wf.appendChild(bar);
+    }
+
+    this.selectVoice();
+    if (this.synth.onvoiceschanged !== undefined) {
+      this.synth.onvoiceschanged = () => this.selectVoice();
+    }
+
+    return true;
+  },
+
+  selectVoice() {
+    const voices = this.synth.getVoices();
+    const preferred = [
+      'Google UK English Male', 'Daniel', 'Alex', 'Microsoft Mark',
+      'Google UK English Female', 'Samantha', 'Microsoft David',
+    ];
+    for (const name of preferred) {
+      const v = voices.find(v => v.name.includes(name));
+      if (v) { this.voice = v; return; }
+    }
+    const en = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('male'));
+    if (en) { this.voice = en; return; }
+    const any = voices.find(v => v.lang.startsWith('en'));
+    if (any) this.voice = any;
+  },
+
+  speak(text, callback) {
+    this.synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    if (this.voice) utter.voice = this.voice;
+    utter.rate = 1.05;
+    utter.pitch = 0.85;
+    utter.volume = 1;
+
+    this.isSpeaking = true;
+    const orb = document.getElementById('voiceOrb');
+    const status = document.getElementById('voiceStatus');
+    orb.className = 'voice-orb speaking-orb';
+    status.textContent = 'HERMES SPEAKING';
+    status.style.color = 'var(--cyan)';
+    this.animateSpeaking();
+
+    utter.onend = () => {
+      this.isSpeaking = false;
+      if (this.isListening) {
+        orb.className = 'voice-orb listening-orb';
+        status.textContent = 'LISTENING';
+        status.style.color = 'var(--red)';
+        try { this.recognition.start(); } catch {}
+      }
+      if (callback) callback();
+    };
+
+    this.synth.speak(utter);
+  },
+
+  animateSpeaking() {
+    const bars = document.querySelectorAll('#voiceWaveform .bar');
+    const animate = () => {
+      if (!this.isSpeaking) {
+        bars.forEach(b => b.style.height = '4px');
+        return;
+      }
+      bars.forEach(b => {
+        const h = 4 + Math.random() * 48;
+        b.style.height = h + 'px';
+        b.style.background = 'var(--cyan)';
+      });
+      requestAnimationFrame(animate);
+    };
+    animate();
+  },
+
+  async startListening() {
+    this.isListening = true;
+    const overlay = document.getElementById('voiceOverlay');
+    const orb = document.getElementById('voiceOrb');
+    const status = document.getElementById('voiceStatus');
+    const btn = document.getElementById('voiceBtn');
+
+    overlay.classList.add('visible');
+    orb.className = 'voice-orb listening-orb';
+    status.textContent = 'LISTENING';
+    status.style.color = 'var(--red)';
+    btn.classList.add('listening');
+    document.getElementById('voiceTranscript').textContent = '';
+
+    addEvent('info', 'Voice: mode aktif — mendengarkan...');
+    this.speak('Siap menerima perintah, Sir.', () => {});
+
+    try {
+      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const source = this.audioCtx.createMediaStreamSource(this.micStream);
+      this.analyser = this.audioCtx.createAnalyser();
+      this.analyser.fftSize = 64;
+      source.connect(this.analyser);
+      this.animateWaveform();
+    } catch (err) {
+      addEvent('warn', 'Microphone: ' + err.message);
+    }
+  },
+
+  animateWaveform() {
+    const bars = document.querySelectorAll('#voiceWaveform .bar');
+    const data = new Uint8Array(this.analyser.frequencyBinCount);
+
+    const draw = () => {
+      if (!this.isListening) {
+        bars.forEach(b => b.style.height = '4px');
+        return;
+      }
+      if (this.isSpeaking) {
+        requestAnimationFrame(draw);
+        return;
+      }
+      this.analyser.getByteFrequencyData(data);
+      const step = Math.floor(data.length / this.waveformBars);
+      bars.forEach((bar, i) => {
+        const val = data[i * step] || 0;
+        const h = 4 + (val / 255) * 50;
+        bar.style.height = h + 'px';
+        bar.style.background = val > 180 ? 'var(--red)' : val > 80 ? 'var(--amber)' : 'var(--cyan)';
+      });
+      requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  stopListening() {
+    this.isListening = false;
+    this.isSpeaking = false;
+    this.synth.cancel();
+    try { this.recognition.stop(); } catch {}
+    if (this.micStream) {
+      this.micStream.getTracks().forEach(t => t.stop());
+      this.micStream = null;
+    }
+    if (this.audioCtx) {
+      this.audioCtx.close();
+      this.audioCtx = null;
+    }
+
+    document.getElementById('voiceOverlay').classList.remove('visible');
+    document.getElementById('voiceBtn').classList.remove('listening');
+    document.getElementById('voiceBtn').classList.remove('speaking');
+    addEvent('info', 'Voice: mode nonaktif');
+  },
+
+  handleCommand(text) {
+    addEvent('info', `Voice: "${text}"`);
+    const lower = text.toLowerCase();
+
+    const orb = document.getElementById('voiceOrb');
+    const status = document.getElementById('voiceStatus');
+    orb.className = 'voice-orb processing-orb';
+    status.textContent = 'PROCESSING';
+    status.style.color = 'var(--amber)';
+
+    try { this.recognition.stop(); } catch {}
+
+    const VOICE_COMMANDS = [
+      { match: ['cari file', 'carikan file', 'search file', 'temukan file'], tool: 'search_files', extract: (t) => ({ query: t.replace(/cari(?:kan)?\s*file\s*/i, '').replace(/search\s*file\s*/i, '').trim() || undefined }) },
+      { match: ['buka file', 'open file'], tool: 'open_file', extract: (t) => ({ path: t.replace(/buka\s*file\s*/i, '').replace(/open\s*file\s*/i, '').trim() }) },
+      { match: ['screenshot', 'tangkap layar', 'ambil screenshot'], tool: 'screenshot', extract: () => ({}) },
+      { match: ['informasi device', 'device info', 'info device', 'info perangkat'], tool: 'device_info', extract: () => ({}) },
+      { match: ['penggunaan disk', 'disk usage', 'kapasitas disk'], tool: 'disk_usage', extract: () => ({}) },
+      { match: ['beban sistem', 'system load', 'status sistem'], tool: 'system_load', extract: () => ({}) },
+      { match: ['daftar proses', 'list process', 'proses berjalan', 'running process'], tool: 'list_processes', extract: () => ({}) },
+      { match: ['baca clipboard', 'isi clipboard', 'get clipboard'], tool: 'get_clipboard', extract: () => ({}) },
+      { match: ['jalankan perintah', 'run command', 'execute command', 'terminal'], tool: 'run_command', extract: (t) => ({ command: t.replace(/jalankan\s*perintah\s*/i, '').replace(/run\s*command\s*/i, '').trim() || undefined }) },
+      { match: ['baca halaman', 'read page', 'baca web'], tool: 'read_page', extract: (t) => ({ url: t.replace(/baca\s*(halaman|web)\s*/i, '').replace(/read\s*page\s*/i, '').trim() || undefined }) },
+      { match: ['cari di web', 'search web', 'cari online', 'google'], tool: 'search_web', extract: (t) => ({ query: t.replace(/cari\s*(di\s*)?web\s*/i, '').replace(/search\s*web\s*/i, '').replace(/google\s*/i, '').replace(/cari\s*online\s*/i, '').trim() || undefined }) },
+      { match: ['posisi mouse', 'mouse position'], tool: 'mouse_position', extract: () => ({}) },
+      { match: ['resolusi layar', 'screen resolution'], tool: 'screen_resolution', extract: () => ({}) },
+      { match: ['window aktif', 'active window', 'jendela aktif'], tool: 'active_window', extract: () => ({}) },
+      { match: ['salin ke clipboard', 'copy to clipboard', 'set clipboard'], tool: 'set_clipboard', extract: (t) => ({ text: t.replace(/salin\s*ke\s*clipboard\s*/i, '').replace(/copy\s*to\s*clipboard\s*/i, '').replace(/set\s*clipboard\s*/i, '').trim() }) },
+      { match: ['notifikasi', 'kirim notifikasi', 'send notification'], tool: 'notify', extract: (t) => ({ title: 'Hermes', message: t.replace(/(?:kirim\s*)?notifikasi\s*/i, '').replace(/send\s*notification\s*/i, '').trim() }) },
+      { match: ['tampilkan semua', 'show all', 'semua tool', 'semua perintah'], tool: '__show_all', extract: () => ({}) },
+      { match: ['berhenti', 'stop', 'diam', 'tutup'], tool: '__stop', extract: () => ({}) },
+    ];
+
+    let matched = null;
+    for (const cmd of VOICE_COMMANDS) {
+      for (const keyword of cmd.match) {
+        if (lower.includes(keyword)) {
+          matched = { tool: cmd.tool, params: cmd.extract(text) };
+          break;
+        }
+      }
+      if (matched) break;
+    }
+
+    if (matched) {
+      if (matched.tool === '__show_all') {
+        this.speak('Menampilkan semua perintah yang tersedia, Sir.');
+        showAllTools();
+        return;
+      }
+      if (matched.tool === '__stop') {
+        this.speak('Menonaktifkan mode suara. Sampai jumpa, Sir.', () => {
+          this.stopListening();
+        });
+        return;
+      }
+
+      const hasRequired = findToolDef(matched.tool);
+      if (hasRequired) {
+        const requiredMissing = hasRequired.tool.parameters.filter(p => p.required && !matched.params[p.name]);
+        if (requiredMissing.length > 0) {
+          this.speak(`Tool ${matched.tool} membutuhkan parameter ${requiredMissing.map(p => p.name).join(' dan ')}. Silakan masukkan melalui form, Sir.`);
+          selectTool(matched.tool);
+          return;
+        }
+      }
+
+      this.speak(`Menjalankan ${matched.tool.replace(/_/g, ' ')}, Sir.`);
+      this.executeVoiceCommand(matched.tool, matched.params);
+    } else {
+      this.speak(`Maaf Sir, saya tidak mengenali perintah tersebut. Coba katakan seperti: cari file, screenshot, device info, atau jalankan perintah.`);
+    }
+  },
+
+  async executeVoiceCommand(toolName, params) {
+    const start = Date.now();
+    try {
+      const res = await fetch(`${API}/api/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool: toolName, params: params || {} }),
+      });
+      const result = await res.json();
+      const elapsed = Date.now() - start;
+
+      const badge = document.getElementById('response-badge');
+      badge.style.display = 'inline';
+      badge.className = `response-badge ${result.success ? 'ok' : 'err'}`;
+      badge.textContent = result.success ? `COMPLETE ${elapsed}ms` : 'FAILED';
+
+      const content = document.getElementById('response-content');
+      if (result.error) {
+        content.innerHTML = `<span style="color:var(--red)">${esc(result.error)}</span>`;
+        this.speak(`Terjadi kesalahan, Sir: ${result.error.slice(0, 80)}`);
+        addEvent('warn', `Error: ${result.error.slice(0, 60)}`);
+      } else {
+        content.innerHTML = renderResult(toolName, result.data);
+        addEvent('ok', `${toolName} completed (${elapsed}ms)`);
+        const summary = this.summarizeResult(toolName, result.data);
+        this.speak(summary);
+      }
+    } catch (err) {
+      document.getElementById('response-content').innerHTML = `<span style="color:var(--red)">Network error: ${esc(err.message)}</span>`;
+      this.speak(`Koneksi gagal, Sir. Pastikan server aktif.`);
+      addEvent('warn', `Network error: ${err.message}`);
+    }
+  },
+
+  summarizeResult(toolName, data) {
+    if (!data) return 'Tidak ada data yang dikembalikan, Sir.';
+
+    if (data.files && Array.isArray(data.files)) {
+      if (data.files.length === 0) return 'Tidak ditemukan file yang cocok, Sir.';
+      const names = data.files.slice(0, 3).map(f => f.name).join(', ');
+      return `Ditemukan ${data.totalFound || data.files.length} file, Sir. Termasuk: ${names}.`;
+    }
+    if (data.hostname) return `Device: ${data.hostname}, platform ${data.platform}, memori ${data.totalMemory}, ${data.cpus} CPU.`;
+    if (data.cpuUsage) return `Beban CPU ${data.cpuUsage}, memori terpakai ${data.memoryUsed} dari total, uptime ${data.uptime}, ${data.processCount} proses berjalan.`;
+    if (data.path && data.sizeHuman) return `Screenshot berhasil disimpan, Sir. Ukuran ${data.sizeHuman}.`;
+    if (data.processes) return `${data.total} proses ditemukan, Sir.`;
+    if (data.text !== undefined && data.title !== undefined) return `Halaman: ${data.title}. ${data.text.slice(0, 100)}.`;
+    if (data.results && data.query) return `Ditemukan ${data.results.length} hasil pencarian untuk "${data.query}".`;
+    if (data.command !== undefined) return `Perintah selesai, exit code ${data.exitCode}. ${data.stdout ? data.stdout.slice(0, 80) : ''}`;
+    if (Array.isArray(data)) return `Data terdiri dari ${data.length} baris, Sir.`;
+    if (typeof data === 'object') {
+      const keys = Object.keys(data);
+      return `Berhasil, Sir. Data: ${keys.slice(0, 4).join(', ')}.`;
+    }
+    return 'Perintah berhasil dijalankan, Sir.';
+  },
+};
+
+function toggleVoice() {
+  if (JARVIS.isListening) {
+    stopVoice();
+  } else {
+    startVoice();
+  }
+}
+
+function startVoice() {
+  if (!JARVIS.recognition && !JARVIS.init()) {
+    addEvent('warn', 'Voice tidak tersedia di browser ini');
+    return;
+  }
+  JARVIS.startListening();
+}
+
+function stopVoice() {
+  JARVIS.stopListening();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && JARVIS.isListening) stopVoice();
+});
+
+// ─── SKILLS & TOOLS ───
 async function loadSkills() {
   const res = await fetch(`${API}/api/skills`);
   const data = await res.json();
@@ -470,18 +975,20 @@ async function loadSkills() {
   renderToolTags();
   renderActionGrid();
   addEvent('info', `System initialized: ${allSkills.length} skills, ${totalTools} tools ready`);
-  addEvent('ok', 'Hermes Agent online');
+  addEvent('ok', 'Hermes Agent online — voice ready');
 }
 
 function renderCommandGrid() {
   const commands = [
-    { label: 'Deep Work', desc: 'Help + Assist', tool: null, action: () => showAllTools() },
-    { label: 'Voice Tone', desc: 'HERMES ASSISTANT', tool: null },
+    { label: 'Voice Mode', desc: 'JARVIS Voice Control', action: 'startVoice()' },
+    { label: 'All Commands', desc: 'Show all tools', action: 'showAllTools()' },
     { label: 'Search Files', desc: 'Device file search', tool: 'search_files' },
-    { label: 'Read Web', desc: 'Extract web content', tool: 'read_page' },
+    { label: 'Screenshot', desc: 'Capture screen', tool: 'screenshot' },
+    { label: 'Run Command', desc: 'Shell / terminal', tool: 'run_command' },
+    { label: 'Read Web', desc: 'Extract content', tool: 'read_page' },
   ];
   document.getElementById('command-grid').innerHTML = commands.map(c => `
-    <div class="cmd-btn" onclick="${c.tool ? `selectTool('${c.tool}')` : (c.action ? 'showAllTools()' : '')}">
+    <div class="cmd-btn" onclick="${c.tool ? `selectTool('${c.tool}')` : c.action}">
       <span class="cmd-title">${c.label}</span>
       <span class="cmd-desc">${c.desc}</span>
     </div>
@@ -492,7 +999,7 @@ function renderToolTags() {
   const container = document.getElementById('tool-tags');
   const tags = [];
   for (const skill of allSkills) {
-    const cls = skill.name === 'browser-access' ? 'browser' : '';
+    const cls = skill.name === 'browser-access' ? 'browser' : skill.name === 'computer-use' ? 'computer' : '';
     for (const tool of skill.tools) {
       tags.push(`<span class="tool-tag ${cls}" data-tool="${tool.name}" onclick="selectTool('${tool.name}')">${tool.name}</span>`);
     }
@@ -506,6 +1013,10 @@ const ACTION_ITEMS = [
   'Recent Files', 'Preview File', 'Open File', 'Device Info',
   'Disk Usage', 'Copy File', 'Extract Images', 'Multi Scrape',
   'Open Location', 'Move File', 'Fetch Page',
+  'Screenshot', 'Type Text', 'Mouse Action', 'Run Command',
+  'Active Window', 'Clipboard', 'Processes', 'Kill Process',
+  'System Load', 'Notify', 'Speak', 'Screen Res',
+  'Mouse Pos', 'Set Clipboard',
 ];
 
 const ACTION_TO_TOOL = {
@@ -516,6 +1027,13 @@ const ACTION_TO_TOOL = {
   'Open File': 'open_file', 'Device Info': 'device_info', 'Disk Usage': 'disk_usage',
   'Copy File': 'copy_file', 'Extract Images': 'extract_images', 'Multi Scrape': 'multi_scrape',
   'Open Location': 'open_file_location', 'Move File': 'move_file', 'Fetch Page': 'fetch_page',
+  'Screenshot': 'screenshot', 'Type Text': 'type_text', 'Mouse Action': 'mouse_action',
+  'Run Command': 'run_command', 'Active Window': 'active_window',
+  'Clipboard': 'get_clipboard', 'Processes': 'list_processes',
+  'Kill Process': 'kill_process', 'System Load': 'system_load',
+  'Notify': 'notify', 'Speak': 'speak_text',
+  'Screen Res': 'screen_resolution', 'Mouse Pos': 'mouse_position',
+  'Set Clipboard': 'set_clipboard',
 };
 
 function renderActionGrid() {
@@ -598,10 +1116,11 @@ function showAllTools() {
   html += '<div class="form-desc">Klik tool untuk membuka form parameter.</div>';
 
   for (const skill of allSkills) {
-    html += `<div style="font-family:var(--font-display);font-size:10px;color:var(--cyan);letter-spacing:2px;margin:16px 0 8px;border-bottom:1px solid rgba(0,240,255,0.1);padding-bottom:6px">${skill.name.toUpperCase()} v${skill.version}</div>`;
+    const color = skill.name === 'browser-access' ? '#e056a0' : skill.name === 'computer-use' ? 'var(--purple)' : 'var(--cyan)';
+    html += `<div style="font-family:var(--font-display);font-size:10px;color:${color};letter-spacing:2px;margin:16px 0 8px;border-bottom:1px solid rgba(0,240,255,0.1);padding-bottom:6px">${skill.name.toUpperCase()} v${skill.version}</div>`;
     for (const tool of skill.tools) {
       html += `<div class="action-btn" style="text-align:left;margin-bottom:4px;padding:8px 12px" onclick="selectTool('${tool.name}')">
-        <span style="color:var(--cyan)">${tool.name}</span>
+        <span style="color:${color}">${tool.name}</span>
         <span style="color:var(--text-dim);font-size:10px;margin-left:8px">${tool.description.slice(0, 80)}</span>
       </div>`;
     }
@@ -710,6 +1229,14 @@ function renderResult(toolName, data) {
       </table></div>`;
   }
 
+  if (data.processes && Array.isArray(data.processes)) {
+    return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.total} processes</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>PID</th><th>Name</th><th>CPU</th><th>Memory</th></tr></thead>
+        <tbody>${data.processes.slice(0,30).map(p => `<tr><td>${p.pid}</td><td style="color:var(--cyan)">${esc(p.name)}</td><td>${p.cpu}</td><td>${p.memory}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
   if (data.links && Array.isArray(data.links)) {
     return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.totalLinks} links</div>
       <div style="overflow-x:auto"><table class="data-table">
@@ -749,6 +1276,20 @@ function renderResult(toolName, data) {
       data.elements.map((el,i) => `<div style="border-bottom:1px solid rgba(0,240,255,0.06);padding:4px 0">
         <span style="color:var(--text-dim)">[${i}] &lt;${el.tag}&gt;</span> ${esc(el.text?.slice(0,200))}
       </div>`).join('');
+  }
+
+  if (data.stdout !== undefined && data.command !== undefined) {
+    return `<div style="color:var(--text-dim);margin-bottom:4px">$ ${esc(data.command)}</div>
+      <div style="color:${data.exitCode === 0 ? 'var(--green)' : 'var(--red)'};margin-bottom:4px">Exit: ${data.exitCode} (${data.durationMs}ms)</div>
+      ${data.stdout ? `<div>${esc(data.stdout)}</div>` : ''}
+      ${data.stderr ? `<div style="color:var(--amber)">${esc(data.stderr)}</div>` : ''}`;
+  }
+
+  if (data.path && data.sizeHuman && data.timestamp) {
+    return `<div style="color:var(--green);margin-bottom:8px">Screenshot berhasil!</div>
+      <div><span style="color:var(--cyan)">Path:</span> ${esc(data.path)}</div>
+      <div><span style="color:var(--cyan)">Size:</span> ${data.sizeHuman}</div>
+      <div><span style="color:var(--cyan)">Time:</span> ${data.timestamp}</div>`;
   }
 
   return esc(JSON.stringify(data, null, 2));
@@ -800,7 +1341,7 @@ function initNeural() {
         ring,
         speed: 0.2 + Math.random() * 0.5,
         phase: Math.random() * Math.PI * 2,
-        color: ring < 2 ? '#00f0ff' : ring < 4 ? '#00ff88' : ring < 6 ? '#ffaa00' : '#e056a0',
+        color: ring < 2 ? '#00f0ff' : ring < 4 ? '#00ff88' : ring < 6 ? '#ffaa00' : '#a855f7',
       });
     }
 
@@ -821,7 +1362,6 @@ function initNeural() {
     t += 0.005;
     ctx.clearRect(0, 0, W, H);
 
-    // Rings
     const cx = W/2, cy = H/2;
     for (let r = 60; r < Math.min(W,H)*0.45; r += 60) {
       ctx.beginPath();
@@ -831,7 +1371,6 @@ function initNeural() {
       ctx.stroke();
     }
 
-    // Edges
     for (const [i, j, d] of edges) {
       const a = nodes[i], b = nodes[j];
       const pulse = 0.5 + 0.5 * Math.sin(t * 2 + d / 20);
@@ -843,7 +1382,6 @@ function initNeural() {
       ctx.stroke();
     }
 
-    // Nodes
     for (const n of nodes) {
       const pulse = 0.5 + 0.5 * Math.sin(t * n.speed * 3 + n.phase);
       const glow = n.r * (1.5 + pulse);
