@@ -1,13 +1,14 @@
 {
   "name": "hermes-agent",
   "version": "0.1.0",
-  "description": "Hermes Desktop Agent - AI assistant with device access capabilities",
+  "description": "Hermes Desktop Agent - AI assistant with device access and browser capabilities",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js",
+    "dev": "tsx watch src/dashboard/server.ts",
+    "start": "node dist/dashboard/server.js",
+    "dashboard": "tsx src/dashboard/server.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/",
@@ -22,6 +23,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/mime-types": "^3.0.1",
     "@types/node": "^20.14.0",
     "tsx": "^4.16.0",
@@ -29,6 +31,8 @@
     "vitest": "^2.0.0"
   },
   "dependencies": {
+    "cheerio": "^1.2.0",
+    "express": "^5.2.1",
     "glob": "^11.0.0",
     "mime-types": "^2.1.35"
   },

@@ -1,5 +1,6 @@
 export { SkillRegistry } from "./core/skill-registry.js";
 export { deviceAccessSkill } from "./skills/device-access/index.js";
+export { browserAccessSkill } from "./skills/browser-access/index.js";
 export type {
   SkillDefinition,
   ToolDefinition,
@@ -12,20 +13,11 @@ export type {
 
 import { SkillRegistry } from "./core/skill-registry.js";
 import { deviceAccessSkill } from "./skills/device-access/index.js";
+import { browserAccessSkill } from "./skills/browser-access/index.js";
 
 export function createHermesAgent(): SkillRegistry {
   const registry = new SkillRegistry();
   registry.register(deviceAccessSkill);
+  registry.register(browserAccessSkill);
   return registry;
-}
-
-if (process.argv[1] && process.argv[1].endsWith("index")) {
-  const registry = createHermesAgent();
-  console.log("Hermes Agent — Device Access Skill");
-  console.log("===================================");
-  console.log(`Skills terdaftar: ${registry.getAllSkills().length}`);
-  console.log("\nTools yang tersedia:");
-  for (const tool of registry.listTools()) {
-    console.log(`  [${tool.skill}] ${tool.name} — ${tool.description}`);
-  }
 }
