@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HERMES Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --bg: #0a0e17;
+  --bg2: #0d1220;
+  --panel: rgba(10,20,40,0.85);
+  --panel-border: rgba(0,240,255,0.15);
+  --panel-glow: rgba(0,240,255,0.05);
+  --cyan: #00f0ff;
+  --cyan-dim: rgba(0,240,255,0.4);
+  --cyan-glow: rgba(0,240,255,0.12);
+  --green: #00ff88;
+  --green-dim: rgba(0,255,136,0.5);
+  --amber: #ffaa00;
+  --red: #ff3355;
+  --purple: #a855f7;
+  --gold: #fcb400;
+  --text: #c8dce8;
+  --text-dim: #5a7a8a;
+  --text-bright: #e8f4ff;
+  --font-display: 'Orbitron', monospace;
+  --font-ui: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,240,255,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, rgba(0,255,136,0.04) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.app { position: relative; z-index: 1; display: grid; grid-template-columns: 320px 1fr 360px; grid-template-rows: auto 1fr auto; height: 100vh; gap: 0; }
+
+/* HEADER */
+.header {
+  grid-column: 1 / -1;
+  display: flex; align-items: center;
+  padding: 12px 24px;
+  background: linear-gradient(180deg, rgba(10,20,40,0.95) 0%, rgba(10,20,40,0.7) 100%);
+  border-bottom: 1px solid var(--panel-border);
+  position: relative;
+}
+.header::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.5;
+}
+
+.logo-area { display: flex; align-items: center; gap: 16px; }
+.logo-icon {
+  width: 52px; height: 52px;
+  border: 2px solid var(--cyan-dim);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  animation: logoPulse 3s ease-in-out infinite;
+}
+.logo-icon::before {
+  content: ''; position: absolute; inset: -4px;
+  border: 1px solid rgba(0,240,255,0.1);
+  border-radius: 50%;
+  animation: logoSpin 20s linear infinite;
+}
+@keyframes logoPulse { 0%,100% { box-shadow: 0 0 15px rgba(0,240,255,0.2); } 50% { box-shadow: 0 0 30px rgba(0,240,255,0.4); } }
+@keyframes logoSpin { to { transform: rotate(360deg); } }
+
+.logo-icon svg { width: 28px; height: 28px; }
+
+.title-area { flex: 1; text-align: center; }
+.title-main {
+  font-family: var(--font-display);
+  font-size: 36px; font-weight: 800;
+  background: linear-gradient(135deg, var(--cyan), #00ff88);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 8px;
+  text-shadow: 0 0 40px rgba(0,240,255,0.3);
+  filter: drop-shadow(0 0 20px rgba(0,240,255,0.15));
+}
+.title-sub {
+  font-family: var(--font-ui);
+  font-size: 13px; color: var(--text-dim);
+  letter-spacing: 2px; margin-top: 2px;
+}
+.channel-badge {
+  display: inline-block; margin-top: 6px; padding: 3px 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px; font-family: var(--font-mono); font-size: 11px;
+  color: var(--cyan); letter-spacing: 2px;
+  background: rgba(0,240,255,0.05);
+}
+
+.status-area { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; min-width: 240px; }
+.status-row { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.status-dot.idle { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+
+/* PANELS */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+}
+.panel-head {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(0,240,255,0.08);
+  font-family: var(--font-display);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-head .live { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--green); }
+.panel-head .live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.panel-body { padding: 14px 16px; }
+
+/* LEFT SIDEBAR */
+.sidebar-left { display: flex; flex-direction: column; gap: 1px; overflow-y: auto; padding: 12px; }
+
+.command-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cmd-btn {
+  display: flex; flex-direction: column; padding: 10px 12px;
+  background: rgba(0,240,255,0.04);
+  border: 1px solid rgba(0,240,255,0.1);
+  border-radius: 4px; cursor: pointer;
+  transition: all 0.2s; color: var(--text);
+  font-family: var(--font-ui);
+}
+.cmd-btn:hover {
+  background: rgba(0,240,255,0.1);
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0,240,255,0.1);
+}
+.cmd-btn.active {
+  background: rgba(0,240,255,0.12);
+  border-color: var(--cyan);
+  box-shadow: 0 0 20px rgba(0,240,255,0.15), inset 0 0 20px rgba(0,240,255,0.05);
+}
+.cmd-btn .cmd-title { font-size: 13px; font-weight: 600; }
+.cmd-btn .cmd-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+.tools-section { margin-top: 4px; }
+.tool-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tool-tag {
+  padding: 4px 10px; font-family: var(--font-mono); font-size: 11px;
+  border: 1px solid rgba(0,240,255,0.15); border-radius: 3px;
+  color: var(--text-dim); cursor: pointer; transition: all 0.15s;
+  background: rgba(0,240,255,0.03);
+}
+.tool-tag:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,0.08); }
+.tool-tag.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,0.1); box-shadow: 0 0 8px rgba(0,240,255,0.1); }
+.tool-tag.browser { border-color: rgba(224,86,160,0.3); }
+.tool-tag.browser:hover, .tool-tag.browser.active { border-color: #e056a0; color: #e056a0; background: rgba(224,86,160,0.1); }
+.tool-tag.computer { border-color: rgba(168,85,247,0.3); }
+.tool-tag.computer:hover, .tool-tag.computer.active { border-color: var(--purple); color: var(--purple); background: rgba(168,85,247,0.1); }
+.tool-tag.airtable { border-color: rgba(252,180,0,0.3); }
+.tool-tag.airtable:hover, .tool-tag.airtable.active { border-color: var(--gold); color: var(--gold); background: rgba(252,180,0,0.1); }
+
+/* CENTER */
+.center { display: flex; flex-direction: column; overflow: hidden; }
+
+.viz-area {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; min-height: 300px;
+}
+
+.neural-canvas { width: 100%; height: 100%; }
+
+/* Tool form overlay */
+.tool-form-area {
+  display: none;
+  position: absolute; inset: 0;
+  background: rgba(10,14,23,0.92);
+  backdrop-filter: blur(8px);
+  padding: 32px;
+  overflow-y: auto;
+  z-index: 5;
+}
+.tool-form-area.visible { display: block; }
+
+.form-panel {
+  max-width: 600px; margin: 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px; padding: 24px;
+}
+.form-title {
+  font-family: var(--font-display);
+  font-size: 14px; color: var(--cyan);
+  letter-spacing: 2px; margin-bottom: 4px;
+}
+.form-desc { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; }
+
+.form-group { margin-bottom: 14px; }
+.form-label {
+  display: block; font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 1px; margin-bottom: 5px;
+}
+.form-label .req { color: var(--red); }
+.form-input {
+  width: 100%; padding: 9px 14px;
+  background: rgba(0,10,20,0.8);
+  border: 1px solid rgba(0,240,255,0.15);
+  border-radius: 3px; color: var(--text-bright);
+  font-family: var(--font-mono); font-size: 13px;
+  transition: border-color 0.15s;
+}
+.form-input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,240,255,0.1); }
+.form-input::placeholder { color: var(--text-dim); }
+.form-hint { font-size: 10px; color: var(--text-dim); margin-top: 3px; }
+
+.form-actions { display: flex; gap: 8px; margin-top: 18px; }
+.btn {
+  padding: 9px 24px; border: none; border-radius: 3px;
+  font-family: var(--font-display); font-size: 12px; font-weight: 600;
+  letter-spacing: 1.5px; cursor: pointer; transition: all 0.15s;
+}
+.btn-exec {
+  background: linear-gradient(135deg, rgba(0,240,255,0.2), rgba(0,255,136,0.15));
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+}
+.btn-exec:hover { background: rgba(0,240,255,0.25); box-shadow: 0 0 20px rgba(0,240,255,0.2); }
+.btn-exec:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-close {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-dim);
+}
+.btn-close:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+
+/* Response area */
+.response-bar {
+  border-top: 1px solid var(--panel-border);
+  background: var(--panel);
+  position: relative;
+}
+.response-bar::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+}
+.response-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px;
+  font-family: var(--font-display); font-size: 11px; letter-spacing: 2px; color: var(--cyan);
+}
+.response-badge {
+  padding: 2px 12px; border-radius: 3px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+}
+.response-badge.ok { background: rgba(0,255,136,0.12); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+.response-badge.err { background: rgba(255,51,85,0.12); color: var(--red); border: 1px solid rgba(255,51,85,0.2); }
+.response-content {
+  padding: 12px 16px; max-height: 250px; overflow-y: auto;
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.7;
+  color: var(--text); white-space: pre-wrap; word-break: break-word;
+}
+
+/* Data table */
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th {
+  text-align: left; padding: 6px 10px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
+  color: var(--text-dim); border-bottom: 1px solid rgba(0,240,255,0.1);
+}
+.data-table td { padding: 6px 10px; border-bottom: 1px solid rgba(0,240,255,0.05); }
+.data-table tr:hover td { background: rgba(0,240,255,0.04); }
+
+/* BOTTOM BAR */
+.bottom-bar {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 10px 20px;
+  border-top: 1px solid var(--panel-border);
+  background: var(--panel);
+}
+.bar-btn {
+  padding: 7px 16px; font-family: var(--font-mono); font-size: 11px;
+  background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.12);
+  border-radius: 3px; color: var(--text-dim); cursor: pointer; transition: all 0.15s;
+}
+.bar-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,0.1); }
+.bar-btn.accent { border-color: var(--cyan); color: var(--cyan); }
+.bar-btn.danger { border-color: rgba(255,51,85,0.3); color: var(--red); }
+.bar-btn.danger:hover { border-color: var(--red); background: rgba(255,51,85,0.1); }
+
+/* RIGHT SIDEBAR */
+.sidebar-right { display: flex; flex-direction: column; overflow-y: auto; padding: 12px; gap: 1px; }
+
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.action-btn {
+  padding: 8px 10px; text-align: center;
+  font-family: var(--font-mono); font-size: 11px;
+  background: rgba(0,240,255,0.03);
+  border: 1px solid rgba(0,240,255,0.1);
+  border-radius: 3px; color: var(--text-dim);
+  cursor: pointer; transition: all 0.15s;
+}
+.action-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,0.08); }
+
+.event-stream {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-dim); line-height: 1.8;
+  max-height: 200px; overflow-y: auto;
+}
+.event-stream .ev { padding: 2px 0; border-bottom: 1px solid rgba(0,240,255,0.04); }
+.ev-time { color: var(--text-dim); }
+.ev-ok { color: var(--green); }
+.ev-info { color: var(--cyan); }
+.ev-warn { color: var(--amber); }
+
+/* Spinner */
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,240,255,0.2); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── VOICE UI ─── */
+.voice-btn {
+  position: relative;
+  padding: 7px 18px;
+  font-family: var(--font-display); font-size: 11px; font-weight: 600;
+  letter-spacing: 1.5px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(0,240,255,0.1));
+  border: 1px solid var(--purple);
+  border-radius: 3px;
+  color: var(--purple);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.voice-btn:hover {
+  background: rgba(168,85,247,0.2);
+  box-shadow: 0 0 20px rgba(168,85,247,0.2);
+}
+.voice-btn.listening {
+  animation: voicePulse 1s ease-in-out infinite;
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(255,51,85,0.15);
+}
+.voice-btn.speaking {
+  animation: voicePulse 0.8s ease-in-out infinite;
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0,240,255,0.15);
+}
+@keyframes voicePulse {
+  0%,100% { box-shadow: 0 0 8px rgba(168,85,247,0.3); }
+  50% { box-shadow: 0 0 24px rgba(168,85,247,0.6); }
+}
+
+.voice-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,14,23,0.95);
+  backdrop-filter: blur(12px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+.voice-overlay.visible { display: flex; }
+
+.voice-orb-container {
+  position: relative;
+  width: 200px; height: 200px;
+}
+.voice-orb {
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  border: 2px solid var(--cyan-dim);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  transition: all 0.3s;
+}
+.voice-orb.listening-orb {
+  border-color: var(--red);
+  box-shadow: 0 0 40px rgba(255,51,85,0.3), 0 0 80px rgba(255,51,85,0.1);
+}
+.voice-orb.speaking-orb {
+  border-color: var(--cyan);
+  box-shadow: 0 0 40px rgba(0,240,255,0.3), 0 0 80px rgba(0,240,255,0.1);
+}
+.voice-orb.processing-orb {
+  border-color: var(--amber);
+  box-shadow: 0 0 40px rgba(255,170,0,0.3);
+}
+.voice-orb::before, .voice-orb::after {
+  content: ''; position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0,240,255,0.1);
+}
+.voice-orb::before { inset: -12px; animation: logoSpin 15s linear infinite; }
+.voice-orb::after { inset: -24px; animation: logoSpin 25s linear infinite reverse; }
+
+.voice-waveform {
+  width: 120px; height: 60px;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+}
+.voice-waveform .bar {
+  width: 4px;
+  background: var(--cyan);
+  border-radius: 2px;
+  transition: height 0.05s;
+  min-height: 4px;
+}
+
+.voice-status {
+  font-family: var(--font-display);
+  font-size: 14px; letter-spacing: 3px;
+  color: var(--cyan);
+}
+
+.voice-transcript {
+  font-family: var(--font-mono);
+  font-size: 16px; color: var(--text-bright);
+  max-width: 600px; text-align: center;
+  min-height: 24px;
+  line-height: 1.6;
+}
+
+.voice-hint {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.voice-close-btn {
+  position: absolute; top: 20px; right: 24px;
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--font-mono); font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.voice-close-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.15); border-radius: 2px; }
+
+@media (max-width: 1200px) { .app { grid-template-columns: 260px 1fr 300px; } }
+@media (max-width: 900px) { .app { grid-template-columns: 1fr; } .sidebar-left, .sidebar-right { display: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-area">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M16 4L4 10v12l12 6 12-6V10L16 4z" stroke="var(--cyan)" stroke-width="1.5" fill="none"/>
+          <path d="M16 4v18M4 10l12 12 12-12" stroke="var(--cyan)" stroke-width="1" opacity="0.5"/>
+          <circle cx="16" cy="16" r="3" fill="var(--cyan)" opacity="0.6"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="title-area">
+      <div class="title-main">HERMES</div>
+      <div class="title-sub">Sir. Ralie Akbar Personal Assistant Agent Direct Channel</div>
+      <div class="channel-badge">CHANNEL 1 &middot; HERMES AGENT</div>
+    </div>
+
+    <div class="status-area">
+      <div class="status-row"><div class="status-dot online"></div> Uplink: online - localhost:3141</div>
+      <div class="status-row"><div class="status-dot idle"></div> Profile: default</div>
+      <div class="status-row"><div class="status-dot online"></div> Skills: <span id="stat-count">-</span> active</div>
+    </div>
+  </div>
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar-left">
+    <div class="panel" style="margin-bottom:8px">
+      <div class="panel-head">DEEP CHANNEL</div>
+      <div class="panel-body">
+        <div class="command-grid" id="command-grid"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:8px">
+      <div class="panel-head">CONNECTED HERMES TOOLS</div>
+      <div class="panel-body">
+        <div class="tool-tags" id="tool-tags"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">PENDING UPLINK</div>
+      <div class="panel-body" id="pending-area" style="min-height:60px;">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">No pending tasks</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center">
+    <div class="viz-area">
+      <canvas class="neural-canvas" id="neuralCanvas"></canvas>
+      <div class="tool-form-area" id="toolFormArea"></div>
+    </div>
+
+    <div class="response-bar">
+      <div class="response-header">
+        <span>HERMES RESPONSE</span>
+        <span class="response-badge ok" id="response-badge" style="display:none">READY</span>
+      </div>
+      <div class="response-content" id="response-content">
+        <span style="color:var(--text-dim)">// Pilih tool dari sidebar atau tekan VOICE untuk perintah suara JARVIS.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar-right">
+    <div class="panel" style="margin-bottom:8px">
+      <div class="panel-head">ACTION LOG <span class="live">LIVE TELEMETRY</span></div>
+      <div class="panel-body">
+        <div style="font-family:var(--font-display);font-size:10px;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:8px">MISSION CONTROLS</div>
+        <div class="action-grid" id="action-grid"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">EVENT STREAM <span class="live">LIVE</span></div>
+      <div class="panel-body">
+        <div class="event-stream" id="event-stream"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">VOICE</button>
+    <div class="bar-btn accent" onclick="showAllTools()">Commands</div>
+    <div class="bar-btn" onclick="execQuick('device_info')">Device</div>
+    <div class="bar-btn" onclick="execQuick('system_load')">System</div>
+    <div class="bar-btn" onclick="execQuick('disk_usage')">Disk</div>
+    <div class="bar-btn danger" onclick="closeForm()">Stop</div>
+  </div>
+</div>
+
+<!-- VOICE OVERLAY -->
+<div class="voice-overlay" id="voiceOverlay">
+  <button class="voice-close-btn" onclick="stopVoice()">ESC / CLOSE</button>
+  <div class="voice-orb-container">
+    <div class="voice-orb" id="voiceOrb">
+      <div class="voice-waveform" id="voiceWaveform"></div>
+    </div>
+  </div>
+  <div class="voice-status" id="voiceStatus">INITIALIZING</div>
+  <div class="voice-transcript" id="voiceTranscript"></div>
+  <div class="voice-hint">Tekan ESC untuk keluar &middot; Bicara perintah Anda, Sir.</div>
+</div>
+
+<script>
+const API = '';
+let allSkills = [];
+let activeTool = null;
+let eventLog = [];
+
+// ─── VOICE SYSTEM (JARVIS) ───
+const JARVIS = {
+  recognition: null,
+  synth: window.speechSynthesis,
+  isListening: false,
+  isSpeaking: false,
+  voice: null,
+  waveformBars: 16,
+  analyser: null,
+  audioCtx: null,
+  micStream: null,
+
+  init() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      addEvent('warn', 'Voice: SpeechRecognition tidak didukung browser ini');
+      return false;
+    }
+
+    this.recognition = new SpeechRecognition();
+    this.recognition.lang = 'id-ID';
+    this.recognition.continuous = false;
+    this.recognition.interimResults = true;
+    this.recognition.maxAlternatives = 1;
+
+    this.recognition.onresult = (e) => {
+      let interim = '';
+      let final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      const display = final || interim;
+      document.getElementById('voiceTranscript').textContent = display;
+      if (final) {
+        this.handleCommand(final.trim());
+      }
+    };
+
+    this.recognition.onend = () => {
+      if (this.isListening && !this.isSpeaking) {
+        try { this.recognition.start(); } catch {}
+      }
+    };
+
+    this.recognition.onerror = (e) => {
+      if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        addEvent('warn', `Voice error: ${e.error}`);
+      }
+    };
+
+    // Build waveform bars
+    const wf = document.getElementById('voiceWaveform');
+    wf.innerHTML = '';
+    for (let i = 0; i < this.waveformBars; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = '4px';
+      wf.appendChild(bar);
+    }
+
+    this.selectVoice();
+    if (this.synth.onvoiceschanged !== undefined) {
+      this.synth.onvoiceschanged = () => this.selectVoice();
+    }
+
+    return true;
+  },
+
+  selectVoice() {
+    const voices = this.synth.getVoices();
+    const preferred = [
+      'Google UK English Male', 'Daniel', 'Alex', 'Microsoft Mark',
+      'Google UK English Female', 'Samantha', 'Microsoft David',
+    ];
+    for (const name of preferred) {
+      const v = voices.find(v => v.name.includes(name));
+      if (v) { this.voice = v; return; }
+    }
+    const en = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('male'));
+    if (en) { this.voice = en; return; }
+    const any = voices.find(v => v.lang.startsWith('en'));
+    if (any) this.voice = any;
+  },
+
+  speak(text, callback) {
+    this.synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    if (this.voice) utter.voice = this.voice;
+    utter.rate = 1.05;
+    utter.pitch = 0.85;
+    utter.volume = 1;
+
+    this.isSpeaking = true;
+    const orb = document.getElementById('voiceOrb');
+    const status = document.getElementById('voiceStatus');
+    orb.className = 'voice-orb speaking-orb';
+    status.textContent = 'HERMES SPEAKING';
+    status.style.color = 'var(--cyan)';
+    this.animateSpeaking();
+
+    utter.onend = () => {
+      this.isSpeaking = false;
+      if (this.isListening) {
+        orb.className = 'voice-orb listening-orb';
+        status.textContent = 'LISTENING';
+        status.style.color = 'var(--red)';
+        try { this.recognition.start(); } catch {}
+      }
+      if (callback) callback();
+    };
+
+    this.synth.speak(utter);
+  },
+
+  animateSpeaking() {
+    const bars = document.querySelectorAll('#voiceWaveform .bar');
+    const animate = () => {
+      if (!this.isSpeaking) {
+        bars.forEach(b => b.style.height = '4px');
+        return;
+      }
+      bars.forEach(b => {
+        const h = 4 + Math.random() * 48;
+        b.style.height = h + 'px';
+        b.style.background = 'var(--cyan)';
+      });
+      requestAnimationFrame(animate);
+    };
+    animate();
+  },
+
+  async startListening() {
+    this.isListening = true;
+    const overlay = document.getElementById('voiceOverlay');
+    const orb = document.getElementById('voiceOrb');
+    const status = document.getElementById('voiceStatus');
+    const btn = document.getElementById('voiceBtn');
+
+    overlay.classList.add('visible');
+    orb.className = 'voice-orb listening-orb';
+    status.textContent = 'LISTENING';
+    status.style.color = 'var(--red)';
+    btn.classList.add('listening');
+    document.getElementById('voiceTranscript').textContent = '';
+
+    addEvent('info', 'Voice: mode aktif — mendengarkan...');
+    this.speak('Siap menerima perintah, Sir.', () => {});
+
+    try {
+      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const source = this.audioCtx.createMediaStreamSource(this.micStream);
+      this.analyser = this.audioCtx.createAnalyser();
+      this.analyser.fftSize = 64;
+      source.connect(this.analyser);
+      this.animateWaveform();
+    } catch (err) {
+      addEvent('warn', 'Microphone: ' + err.message);
+    }
+  },
+
+  animateWaveform() {
+    const bars = document.querySelectorAll('#voiceWaveform .bar');
+    const data = new Uint8Array(this.analyser.frequencyBinCount);
+
+    const draw = () => {
+      if (!this.isListening) {
+        bars.forEach(b => b.style.height = '4px');
+        return;
+      }
+      if (this.isSpeaking) {
+        requestAnimationFrame(draw);
+        return;
+      }
+      this.analyser.getByteFrequencyData(data);
+      const step = Math.floor(data.length / this.waveformBars);
+      bars.forEach((bar, i) => {
+        const val = data[i * step] || 0;
+        const h = 4 + (val / 255) * 50;
+        bar.style.height = h + 'px';
+        bar.style.background = val > 180 ? 'var(--red)' : val > 80 ? 'var(--amber)' : 'var(--cyan)';
+      });
+      requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  stopListening() {
+    this.isListening = false;
+    this.isSpeaking = false;
+    this.synth.cancel();
+    try { this.recognition.stop(); } catch {}
+    if (this.micStream) {
+      this.micStream.getTracks().forEach(t => t.stop());
+      this.micStream = null;
+    }
+    if (this.audioCtx) {
+      this.audioCtx.close();
+      this.audioCtx = null;
+    }
+
+    document.getElementById('voiceOverlay').classList.remove('visible');
+    document.getElementById('voiceBtn').classList.remove('listening');
+    document.getElementById('voiceBtn').classList.remove('speaking');
+    addEvent('info', 'Voice: mode nonaktif');
+  },
+
+  handleCommand(text) {
+    addEvent('info', `Voice: "${text}"`);
+    const lower = text.toLowerCase();
+
+    const orb = document.getElementById('voiceOrb');
+    const status = document.getElementById('voiceStatus');
+    orb.className = 'voice-orb processing-orb';
+    status.textContent = 'PROCESSING';
+    status.style.color = 'var(--amber)';
+
+    try { this.recognition.stop(); } catch {}
+
+    const VOICE_COMMANDS = [
+      { match: ['cari file', 'carikan file', 'search file', 'temukan file'], tool: 'search_files', extract: (t) => ({ query: t.replace(/cari(?:kan)?\s*file\s*/i, '').replace(/search\s*file\s*/i, '').trim() || undefined }) },
+      { match: ['buka file', 'open file'], tool: 'open_file', extract: (t) => ({ path: t.replace(/buka\s*file\s*/i, '').replace(/open\s*file\s*/i, '').trim() }) },
+      { match: ['screenshot', 'tangkap layar', 'ambil screenshot'], tool: 'screenshot', extract: () => ({}) },
+      { match: ['informasi device', 'device info', 'info device', 'info perangkat'], tool: 'device_info', extract: () => ({}) },
+      { match: ['penggunaan disk', 'disk usage', 'kapasitas disk'], tool: 'disk_usage', extract: () => ({}) },
+      { match: ['beban sistem', 'system load', 'status sistem'], tool: 'system_load', extract: () => ({}) },
+      { match: ['daftar proses', 'list process', 'proses berjalan', 'running process'], tool: 'list_processes', extract: () => ({}) },
+      { match: ['baca clipboard', 'isi clipboard', 'get clipboard'], tool: 'get_clipboard', extract: () => ({}) },
+      { match: ['jalankan perintah', 'run command', 'execute command', 'terminal'], tool: 'run_command', extract: (t) => ({ command: t.replace(/jalankan\s*perintah\s*/i, '').replace(/run\s*command\s*/i, '').trim() || undefined }) },
+      { match: ['baca halaman', 'read page', 'baca web'], tool: 'read_page', extract: (t) => ({ url: t.replace(/baca\s*(halaman|web)\s*/i, '').replace(/read\s*page\s*/i, '').trim() || undefined }) },
+      { match: ['cari di web', 'search web', 'cari online', 'google'], tool: 'search_web', extract: (t) => ({ query: t.replace(/cari\s*(di\s*)?web\s*/i, '').replace(/search\s*web\s*/i, '').replace(/google\s*/i, '').replace(/cari\s*online\s*/i, '').trim() || undefined }) },
+      { match: ['posisi mouse', 'mouse position'], tool: 'mouse_position', extract: () => ({}) },
+      { match: ['resolusi layar', 'screen resolution'], tool: 'screen_resolution', extract: () => ({}) },
+      { match: ['window aktif', 'active window', 'jendela aktif'], tool: 'active_window', extract: () => ({}) },
+      { match: ['salin ke clipboard', 'copy to clipboard', 'set clipboard'], tool: 'set_clipboard', extract: (t) => ({ text: t.replace(/salin\s*ke\s*clipboard\s*/i, '').replace(/copy\s*to\s*clipboard\s*/i, '').replace(/set\s*clipboard\s*/i, '').trim() }) },
+      { match: ['notifikasi', 'kirim notifikasi', 'send notification'], tool: 'notify', extract: (t) => ({ title: 'Hermes', message: t.replace(/(?:kirim\s*)?notifikasi\s*/i, '').replace(/send\s*notification\s*/i, '').trim() }) },
+      { match: ['tampilkan semua', 'show all', 'semua tool', 'semua perintah'], tool: '__show_all', extract: () => ({}) },
+      { match: ['berhenti', 'stop', 'diam', 'tutup'], tool: '__stop', extract: () => ({}) },
+    ];
+
+    let matched = null;
+    for (const cmd of VOICE_COMMANDS) {
+      for (const keyword of cmd.match) {
+        if (lower.includes(keyword)) {
+          matched = { tool: cmd.tool, params: cmd.extract(text) };
+          break;
+        }
+      }
+      if (matched) break;
+    }
+
+    if (matched) {
+      if (matched.tool === '__show_all') {
+        this.speak('Menampilkan semua perintah yang tersedia, Sir.');
+        showAllTools();
+        return;
+      }
+      if (matched.tool === '__stop') {
+        this.speak('Menonaktifkan mode suara. Sampai jumpa, Sir.', () => {
+          this.stopListening();
+        });
+        return;
+      }
+
+      const hasRequired = findToolDef(matched.tool);
+      if (hasRequired) {
+        const requiredMissing = hasRequired.tool.parameters.filter(p => p.required && !matched.params[p.name]);
+        if (requiredMissing.length > 0) {
+          this.speak(`Tool ${matched.tool} membutuhkan parameter ${requiredMissing.map(p => p.name).join(' dan ')}. Silakan masukkan melalui form, Sir.`);
+          selectTool(matched.tool);
+          return;
+        }
+      }
+
+      this.speak(`Menjalankan ${matched.tool.replace(/_/g, ' ')}, Sir.`);
+      this.executeVoiceCommand(matched.tool, matched.params);
+    } else {
+      this.speak(`Maaf Sir, saya tidak mengenali perintah tersebut. Coba katakan seperti: cari file, screenshot, device info, atau jalankan perintah.`);
+    }
+  },
+
+  async executeVoiceCommand(toolName, params) {
+    const start = Date.now();
+    try {
+      const res = await fetch(`${API}/api/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool: toolName, params: params || {} }),
+      });
+      const result = await res.json();
+      const elapsed = Date.now() - start;
+
+      const badge = document.getElementById('response-badge');
+      badge.style.display = 'inline';
+      badge.className = `response-badge ${result.success ? 'ok' : 'err'}`;
+      badge.textContent = result.success ? `COMPLETE ${elapsed}ms` : 'FAILED';
+
+      const content = document.getElementById('response-content');
+      if (result.error) {
+        content.innerHTML = `<span style="color:var(--red)">${esc(result.error)}</span>`;
+        this.speak(`Terjadi kesalahan, Sir: ${result.error.slice(0, 80)}`);
+        addEvent('warn', `Error: ${result.error.slice(0, 60)}`);
+      } else {
+        content.innerHTML = renderResult(toolName, result.data);
+        addEvent('ok', `${toolName} completed (${elapsed}ms)`);
+        const summary = this.summarizeResult(toolName, result.data);
+        this.speak(summary);
+      }
+    } catch (err) {
+      document.getElementById('response-content').innerHTML = `<span style="color:var(--red)">Network error: ${esc(err.message)}</span>`;
+      this.speak(`Koneksi gagal, Sir. Pastikan server aktif.`);
+      addEvent('warn', `Network error: ${err.message}`);
+    }
+  },
+
+  summarizeResult(toolName, data) {
+    if (!data) return 'Tidak ada data yang dikembalikan, Sir.';
+
+    if (data.files && Array.isArray(data.files)) {
+      if (data.files.length === 0) return 'Tidak ditemukan file yang cocok, Sir.';
+      const names = data.files.slice(0, 3).map(f => f.name).join(', ');
+      return `Ditemukan ${data.totalFound || data.files.length} file, Sir. Termasuk: ${names}.`;
+    }
+    if (data.hostname) return `Device: ${data.hostname}, platform ${data.platform}, memori ${data.totalMemory}, ${data.cpus} CPU.`;
+    if (data.cpuUsage) return `Beban CPU ${data.cpuUsage}, memori terpakai ${data.memoryUsed} dari total, uptime ${data.uptime}, ${data.processCount} proses berjalan.`;
+    if (data.path && data.sizeHuman) return `Screenshot berhasil disimpan, Sir. Ukuran ${data.sizeHuman}.`;
+    if (data.processes) return `${data.total} proses ditemukan, Sir.`;
+    if (data.text !== undefined && data.title !== undefined) return `Halaman: ${data.title}. ${data.text.slice(0, 100)}.`;
+    if (data.results && data.query) return `Ditemukan ${data.results.length} hasil pencarian untuk "${data.query}".`;
+    if (data.command !== undefined) return `Perintah selesai, exit code ${data.exitCode}. ${data.stdout ? data.stdout.slice(0, 80) : ''}`;
+    if (Array.isArray(data)) return `Data terdiri dari ${data.length} baris, Sir.`;
+    if (typeof data === 'object') {
+      const keys = Object.keys(data);
+      return `Berhasil, Sir. Data: ${keys.slice(0, 4).join(', ')}.`;
+    }
+    return 'Perintah berhasil dijalankan, Sir.';
+  },
+};
+
+function toggleVoice() {
+  if (JARVIS.isListening) {
+    stopVoice();
+  } else {
+    startVoice();
+  }
+}
+
+function startVoice() {
+  if (!JARVIS.recognition && !JARVIS.init()) {
+    addEvent('warn', 'Voice tidak tersedia di browser ini');
+    return;
+  }
+  JARVIS.startListening();
+}
+
+function stopVoice() {
+  JARVIS.stopListening();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && JARVIS.isListening) stopVoice();
+});
+
+// ─── SKILLS & TOOLS ───
+async function loadSkills() {
+  const res = await fetch(`${API}/api/skills`);
+  const data = await res.json();
+  allSkills = data.skills;
+
+  const totalTools = allSkills.reduce((a, s) => a + s.tools.length, 0);
+  document.getElementById('stat-count').textContent = `${allSkills.length} skills / ${totalTools} tools`;
+
+  renderCommandGrid();
+  renderToolTags();
+  renderActionGrid();
+  addEvent('info', `System initialized: ${allSkills.length} skills, ${totalTools} tools ready`);
+  addEvent('ok', 'Hermes Agent online — voice ready');
+}
+
+function renderCommandGrid() {
+  const commands = [
+    { label: 'Voice Mode', desc: 'JARVIS Voice Control', action: 'startVoice()' },
+    { label: 'All Commands', desc: 'Show all tools', action: 'showAllTools()' },
+    { label: 'Search Files', desc: 'Device file search', tool: 'search_files' },
+    { label: 'Screenshot', desc: 'Capture screen', tool: 'screenshot' },
+    { label: 'Run Command', desc: 'Shell / terminal', tool: 'run_command' },
+    { label: 'Read Web', desc: 'Extract content', tool: 'read_page' },
+  ];
+  document.getElementById('command-grid').innerHTML = commands.map(c => `
+    <div class="cmd-btn" onclick="${c.tool ? `selectTool('${c.tool}')` : c.action}">
+      <span class="cmd-title">${c.label}</span>
+      <span class="cmd-desc">${c.desc}</span>
+    </div>
+  `).join('');
+}
+
+function renderToolTags() {
+  const container = document.getElementById('tool-tags');
+  const tags = [];
+  for (const skill of allSkills) {
+    const cls = skill.name === 'browser-access' ? 'browser' : skill.name === 'computer-use' ? 'computer' : skill.name === 'airtable-access' ? 'airtable' : '';
+    for (const tool of skill.tools) {
+      tags.push(`<span class="tool-tag ${cls}" data-tool="${tool.name}" onclick="selectTool('${tool.name}')">${tool.name}</span>`);
+    }
+  }
+  container.innerHTML = tags.join('');
+}
+
+const ACTION_ITEMS = [
+  'Search Files', 'Read Page', 'Scrape Web', 'Extract Links',
+  'Extract Tables', 'Search Web', 'File Info', 'List Directory',
+  'Recent Files', 'Preview File', 'Open File', 'Device Info',
+  'Disk Usage', 'Copy File', 'Extract Images', 'Multi Scrape',
+  'Open Location', 'Move File', 'Fetch Page',
+  'Screenshot', 'Type Text', 'Mouse Action', 'Run Command',
+  'Active Window', 'Clipboard', 'Processes', 'Kill Process',
+  'System Load', 'Notify', 'Speak', 'Screen Res',
+  'Mouse Pos', 'Set Clipboard',
+  'Airtable Bases', 'Airtable Tables', 'Airtable Records',
+  'Airtable Get Record', 'Airtable Create', 'Airtable Update', 'Airtable Delete',
+];
+
+const ACTION_TO_TOOL = {
+  'Search Files': 'search_files', 'Read Page': 'read_page', 'Scrape Web': 'scrape',
+  'Extract Links': 'extract_links', 'Extract Tables': 'extract_tables',
+  'Search Web': 'search_web', 'File Info': 'get_file_info', 'List Directory': 'list_directory',
+  'Recent Files': 'find_recent_files', 'Preview File': 'read_file_preview',
+  'Open File': 'open_file', 'Device Info': 'device_info', 'Disk Usage': 'disk_usage',
+  'Copy File': 'copy_file', 'Extract Images': 'extract_images', 'Multi Scrape': 'multi_scrape',
+  'Open Location': 'open_file_location', 'Move File': 'move_file', 'Fetch Page': 'fetch_page',
+  'Screenshot': 'screenshot', 'Type Text': 'type_text', 'Mouse Action': 'mouse_action',
+  'Run Command': 'run_command', 'Active Window': 'active_window',
+  'Clipboard': 'get_clipboard', 'Processes': 'list_processes',
+  'Kill Process': 'kill_process', 'System Load': 'system_load',
+  'Notify': 'notify', 'Speak': 'speak_text',
+  'Screen Res': 'screen_resolution', 'Mouse Pos': 'mouse_position',
+  'Set Clipboard': 'set_clipboard',
+  'Airtable Bases': 'airtable_list_bases', 'Airtable Tables': 'airtable_list_tables',
+  'Airtable Records': 'airtable_list_records', 'Airtable Get Record': 'airtable_get_record',
+  'Airtable Create': 'airtable_create_record', 'Airtable Update': 'airtable_update_record',
+  'Airtable Delete': 'airtable_delete_record',
+};
+
+function renderActionGrid() {
+  document.getElementById('action-grid').innerHTML = ACTION_ITEMS.map(a => {
+    const tool = ACTION_TO_TOOL[a];
+    return `<div class="action-btn" onclick="selectTool('${tool}')">${a}</div>`;
+  }).join('');
+}
+
+function findToolDef(toolName) {
+  for (const skill of allSkills) {
+    const tool = skill.tools.find(t => t.name === toolName);
+    if (tool) return { skill: skill.name, tool };
+  }
+  return null;
+}
+
+function selectTool(toolName) {
+  const found = findToolDef(toolName);
+  if (!found) return;
+
+  activeTool = found;
+  addEvent('info', `Selected tool: ${toolName}`);
+
+  document.querySelectorAll('.tool-tag').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tool-tag[data-tool="${toolName}"]`)?.classList.add('active');
+
+  const area = document.getElementById('toolFormArea');
+  const { tool } = found;
+
+  area.innerHTML = `
+    <div class="form-panel">
+      <div class="form-title">${toolName.toUpperCase()}</div>
+      <div class="form-desc">${tool.description}</div>
+      <form id="tool-form" onsubmit="executeTool(event)">
+        ${tool.parameters.length === 0
+          ? '<div style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);margin-bottom:12px;">// Tool ini tidak memerlukan parameter</div>'
+          : tool.parameters.map(p => `
+          <div class="form-group">
+            <label class="form-label">${p.name}${p.required ? ' <span class="req">*</span>' : ''}</label>
+            ${p.type === 'boolean'
+              ? `<select class="form-input" name="${p.name}" data-type="boolean">
+                  <option value="">-- select --</option>
+                  <option value="true" ${p.default === true ? 'selected' : ''}>true</option>
+                  <option value="false" ${p.default === false ? 'selected' : ''}>false</option>
+                </select>`
+              : p.enum
+                ? `<select class="form-input" name="${p.name}" data-type="string">
+                    ${p.enum.map(v => `<option value="${v}" ${v === p.default ? 'selected' : ''}>${v}</option>`).join('')}
+                  </select>`
+                : `<input class="form-input" name="${p.name}" data-type="${p.type}"
+                    placeholder="${p.type === 'string[]' ? 'val1, val2, ...' : p.type}"
+                    value="${p.default !== undefined && p.type !== 'boolean' ? p.default : ''}"
+                    ${p.required ? 'required' : ''} />`
+            }
+            <div class="form-hint">${p.description}</div>
+          </div>
+        `).join('')}
+        <div class="form-actions">
+          <button type="submit" class="btn btn-exec" id="exec-btn">EXECUTE</button>
+          <button type="button" class="btn btn-close" onclick="closeForm()">CLOSE</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  area.classList.add('visible');
+}
+
+function closeForm() {
+  document.getElementById('toolFormArea').classList.remove('visible');
+  activeTool = null;
+  document.querySelectorAll('.tool-tag').forEach(t => t.classList.remove('active'));
+}
+
+function showAllTools() {
+  const area = document.getElementById('toolFormArea');
+  let html = '<div class="form-panel" style="max-width:700px">';
+  html += '<div class="form-title">ALL HERMES TOOLS</div>';
+  html += '<div class="form-desc">Klik tool untuk membuka form parameter.</div>';
+
+  for (const skill of allSkills) {
+    const color = skill.name === 'browser-access' ? '#e056a0' : skill.name === 'computer-use' ? 'var(--purple)' : skill.name === 'airtable-access' ? 'var(--gold)' : 'var(--cyan)';
+    html += `<div style="font-family:var(--font-display);font-size:10px;color:${color};letter-spacing:2px;margin:16px 0 8px;border-bottom:1px solid rgba(0,240,255,0.1);padding-bottom:6px">${skill.name.toUpperCase()} v${skill.version}</div>`;
+    for (const tool of skill.tools) {
+      html += `<div class="action-btn" style="text-align:left;margin-bottom:4px;padding:8px 12px" onclick="selectTool('${tool.name}')">
+        <span style="color:${color}">${tool.name}</span>
+        <span style="color:var(--text-dim);font-size:10px;margin-left:8px">${tool.description.slice(0, 80)}</span>
+      </div>`;
+    }
+  }
+
+  html += '<div class="form-actions"><button class="btn btn-close" onclick="closeForm()">CLOSE</button></div></div>';
+  area.innerHTML = html;
+  area.classList.add('visible');
+}
+
+async function executeTool(e) {
+  e.preventDefault();
+  if (!activeTool) return;
+
+  const form = document.getElementById('tool-form');
+  const btn = document.getElementById('exec-btn');
+  const params = {};
+
+  for (const el of form.elements) {
+    if (!el.name) continue;
+    const val = el.value.trim();
+    if (val === '') continue;
+    if (el.dataset.type === 'number') params[el.name] = parseFloat(val);
+    else if (el.dataset.type === 'boolean') params[el.name] = val === 'true';
+    else if (el.dataset.type === 'string[]') params[el.name] = val.split(',').map(s => s.trim()).filter(Boolean);
+    else params[el.name] = val;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> PROCESSING';
+  addEvent('info', `Executing: ${activeTool.tool.name}`);
+
+  const start = Date.now();
+  try {
+    const res = await fetch(`${API}/api/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool: activeTool.tool.name, params }),
+    });
+    const result = await res.json();
+    const elapsed = Date.now() - start;
+
+    const badge = document.getElementById('response-badge');
+    badge.style.display = 'inline';
+    badge.className = `response-badge ${result.success ? 'ok' : 'err'}`;
+    badge.textContent = result.success ? `COMPLETE ${elapsed}ms` : 'FAILED';
+
+    const content = document.getElementById('response-content');
+    if (result.error) {
+      content.innerHTML = `<span style="color:var(--red)">${esc(result.error)}</span>`;
+      addEvent('warn', `Error: ${result.error.slice(0, 60)}`);
+    } else {
+      content.innerHTML = renderResult(activeTool.tool.name, result.data);
+      addEvent('ok', `${activeTool.tool.name} completed (${elapsed}ms)`);
+    }
+
+    closeForm();
+  } catch (err) {
+    document.getElementById('response-content').innerHTML = `<span style="color:var(--red)">Network error: ${esc(err.message)}</span>`;
+    addEvent('warn', `Network error: ${err.message}`);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'EXECUTE';
+}
+
+async function execQuick(toolName) {
+  const found = findToolDef(toolName);
+  if (!found) return;
+
+  if (found.tool.parameters.some(p => p.required)) {
+    selectTool(toolName);
+    return;
+  }
+
+  addEvent('info', `Quick exec: ${toolName}`);
+  const start = Date.now();
+  const res = await fetch(`${API}/api/execute`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tool: toolName, params: {} }),
+  });
+  const result = await res.json();
+  const elapsed = Date.now() - start;
+
+  const badge = document.getElementById('response-badge');
+  badge.style.display = 'inline';
+  badge.className = `response-badge ${result.success ? 'ok' : 'err'}`;
+  badge.textContent = result.success ? `COMPLETE ${elapsed}ms` : 'FAILED';
+
+  document.getElementById('response-content').innerHTML = result.error
+    ? `<span style="color:var(--red)">${esc(result.error)}</span>`
+    : renderResult(toolName, result.data);
+
+  addEvent('ok', `${toolName} done (${elapsed}ms)`);
+}
+
+function renderResult(toolName, data) {
+  if (!data) return '<span style="color:var(--text-dim)">No data</span>';
+
+  if (data.files && Array.isArray(data.files)) {
+    if (data.files.length === 0) return '<span style="color:var(--text-dim)">No files found.</span>';
+    return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.totalFound ?? data.files.length} files found ${data.durationMs ? `(${data.durationMs}ms)` : ''}</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Name</th><th>Size</th><th>Modified</th><th>Path</th></tr></thead>
+        <tbody>${data.files.map(f => `<tr><td style="color:var(--cyan)">${esc(f.name)}</td><td>${f.sizeHuman||''}</td><td>${f.modified||''}</td><td style="color:var(--text-dim)">${esc(f.path)}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.processes && Array.isArray(data.processes)) {
+    return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.total} processes</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>PID</th><th>Name</th><th>CPU</th><th>Memory</th></tr></thead>
+        <tbody>${data.processes.slice(0,30).map(p => `<tr><td>${p.pid}</td><td style="color:var(--cyan)">${esc(p.name)}</td><td>${p.cpu}</td><td>${p.memory}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.links && Array.isArray(data.links)) {
+    return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.totalLinks} links</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Text</th><th>URL</th><th>Type</th></tr></thead>
+        <tbody>${data.links.slice(0,40).map(l => `<tr><td>${esc(l.text?.slice(0,60))}</td><td style="color:var(--cyan)">${esc(l.href)}</td><td>${l.isExternal?'<span style="color:var(--amber)">EXT</span>':'INT'}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.bases && Array.isArray(data.bases)) {
+    if (!data.bases.length) return '<span style="color:var(--text-dim)">No bases found.</span>';
+    return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.total} bases</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Name</th><th>ID</th><th>Permission</th></tr></thead>
+        <tbody>${data.bases.map(b => `<tr><td style="color:var(--gold)">${esc(b.name)}</td><td style="color:var(--text-dim)">${esc(b.id)}</td><td>${esc(b.permissionLevel)}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.tables && Array.isArray(data.tables) && data.tables[0]?.fields && data.tables[0]?.primaryFieldId) {
+    if (!data.tables.length) return '<span style="color:var(--text-dim)">No tables found.</span>';
+    return data.tables.map(t => `
+      <div style="color:var(--gold);font-weight:600;margin:8px 0 4px">${esc(t.name)} <span style="color:var(--text-dim);font-weight:400">(${esc(t.id)})</span></div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Field</th><th>Type</th></tr></thead>
+        <tbody>${t.fields.map(f => `<tr><td>${esc(f.name)}</td><td style="color:var(--text-dim)">${esc(f.type)}</td></tr>`).join('')}</tbody>
+      </table></div>`).join('');
+  }
+
+  if (data.records && Array.isArray(data.records)) {
+    if (!data.records.length) return '<span style="color:var(--text-dim)">No records found.</span>';
+    const cols = [...new Set(data.records.flatMap(r => Object.keys(r.fields || {})))].slice(0, 8);
+    return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.total} records${data.offset ? ' (more available)' : ''}</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Record ID</th>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+        <tbody>${data.records.slice(0,50).map(r => `<tr><td style="color:var(--gold)">${esc(r.id)}</td>${cols.map(c => `<td>${esc(String(r.fields?.[c] ?? ''))}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.id && data.createdTime && data.fields) {
+    return `<div style="color:var(--green);margin-bottom:8px">Record: ${esc(data.id)}</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>${Object.entries(data.fields).map(([k,v]) => `<tr><td style="color:var(--gold)">${esc(k)}</td><td>${esc(String(v))}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.tables && Array.isArray(data.tables)) {
+    if (!data.tables.length) return '<span style="color:var(--text-dim)">No tables found.</span>';
+    return data.tables.map((t,i) => `
+      <div style="color:var(--text-dim);margin:8px 0 4px">Table ${i+1} (${t.totalRows} rows)</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr>${t.headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
+        <tbody>${t.rows.slice(0,20).map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table></div>`).join('');
+  }
+
+  if (data.title !== undefined && data.text !== undefined) {
+    return `<div style="color:var(--cyan);font-weight:600;margin-bottom:4px">${esc(data.title)}</div>
+      ${data.description ? `<div style="color:var(--text-dim);font-size:11px;margin-bottom:6px">${esc(data.description)}</div>` : ''}
+      ${data.wordCount ? `<div style="color:var(--text-dim);font-size:10px;margin-bottom:8px">${data.wordCount} words</div>` : ''}
+      <div>${esc(data.text?.slice(0,8000))}</div>`;
+  }
+
+  if (data.results && Array.isArray(data.results) && data.query) {
+    return `<div style="color:var(--text-dim);margin-bottom:8px">Search: "${esc(data.query)}"</div>` +
+      data.results.map(r => `<div style="border-bottom:1px solid rgba(0,240,255,0.06);padding:6px 0">
+        <div style="color:var(--cyan);font-weight:600">${esc(r.title)}</div>
+        <div style="font-size:10px;color:var(--text-dim);word-break:break-all">${esc(r.url)}</div>
+        <div style="font-size:11px;margin-top:2px">${esc(r.snippet)}</div>
+      </div>`).join('');
+  }
+
+  if (data.elements && Array.isArray(data.elements)) {
+    return `<div style="color:var(--text-dim);margin-bottom:6px">${data.totalMatches} elements (${esc(data.selector)})</div>` +
+      data.elements.map((el,i) => `<div style="border-bottom:1px solid rgba(0,240,255,0.06);padding:4px 0">
+        <span style="color:var(--text-dim)">[${i}] &lt;${el.tag}&gt;</span> ${esc(el.text?.slice(0,200))}
+      </div>`).join('');
+  }
+
+  if (data.stdout !== undefined && data.command !== undefined) {
+    return `<div style="color:var(--text-dim);margin-bottom:4px">$ ${esc(data.command)}</div>
+      <div style="color:${data.exitCode === 0 ? 'var(--green)' : 'var(--red)'};margin-bottom:4px">Exit: ${data.exitCode} (${data.durationMs}ms)</div>
+      ${data.stdout ? `<div>${esc(data.stdout)}</div>` : ''}
+      ${data.stderr ? `<div style="color:var(--amber)">${esc(data.stderr)}</div>` : ''}`;
+  }
+
+  if (data.path && data.sizeHuman && data.timestamp) {
+    return `<div style="color:var(--green);margin-bottom:8px">Screenshot berhasil!</div>
+      <div><span style="color:var(--cyan)">Path:</span> ${esc(data.path)}</div>
+      <div><span style="color:var(--cyan)">Size:</span> ${data.sizeHuman}</div>
+      <div><span style="color:var(--cyan)">Time:</span> ${data.timestamp}</div>`;
+  }
+
+  return esc(JSON.stringify(data, null, 2));
+}
+
+function addEvent(type, msg) {
+  const now = new Date().toLocaleTimeString('id-ID', { hour12: false });
+  const cls = type === 'ok' ? 'ev-ok' : type === 'warn' ? 'ev-warn' : 'ev-info';
+  eventLog.unshift({ time: now, cls, msg });
+  if (eventLog.length > 50) eventLog.pop();
+
+  const container = document.getElementById('event-stream');
+  container.innerHTML = eventLog.map(e =>
+    `<div class="ev"><span class="ev-time">${e.time}</span> <span class="${e.cls}">${esc(e.msg)}</span></div>`
+  ).join('');
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── NEURAL NETWORK VISUALIZATION ───
+function initNeural() {
+  const canvas = document.getElementById('neuralCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes = [], edges = [];
+
+  function resize() {
+    W = canvas.width = canvas.parentElement.clientWidth;
+    H = canvas.height = canvas.parentElement.clientHeight;
+    generateNodes();
+  }
+
+  function generateNodes() {
+    nodes = [];
+    edges = [];
+    const count = Math.floor((W * H) / 4000);
+    const cx = W / 2, cy = H / 2;
+
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * Math.min(W, H) * 0.42;
+      const ring = Math.floor(dist / 60);
+      nodes.push({
+        x: cx + Math.cos(angle) * dist,
+        y: cy + Math.sin(angle) * dist,
+        r: 1.5 + Math.random() * 3,
+        ring,
+        speed: 0.2 + Math.random() * 0.5,
+        phase: Math.random() * Math.PI * 2,
+        color: ring < 2 ? '#00f0ff' : ring < 4 ? '#00ff88' : ring < 6 ? '#ffaa00' : '#a855f7',
+      });
+    }
+
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 80 && Math.random() < 0.4) {
+          edges.push([i, j, d]);
+        }
+      }
+    }
+  }
+
+  let t = 0;
+  function draw() {
+    t += 0.005;
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = W/2, cy = H/2;
+    for (let r = 60; r < Math.min(W,H)*0.45; r += 60) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(0,240,255,${0.04 + 0.01 * Math.sin(t + r/60)})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    for (const [i, j, d] of edges) {
+      const a = nodes[i], b = nodes[j];
+      const pulse = 0.5 + 0.5 * Math.sin(t * 2 + d / 20);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = `rgba(0,240,255,${0.04 + 0.06 * pulse})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    for (const n of nodes) {
+      const pulse = 0.5 + 0.5 * Math.sin(t * n.speed * 3 + n.phase);
+      const glow = n.r * (1.5 + pulse);
+      const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glow * 2);
+      grad.addColorStop(0, n.color);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, glow * 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * (0.8 + 0.2 * pulse), 0, Math.PI * 2);
+      ctx.fillStyle = n.color;
+      ctx.globalAlpha = 0.6 + 0.4 * pulse;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+}
+
+loadSkills();
+initNeural();
+</script>
+</body>
+</html>

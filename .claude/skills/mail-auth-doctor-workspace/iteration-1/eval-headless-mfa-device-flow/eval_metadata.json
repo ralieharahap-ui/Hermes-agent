@@ -1,0 +1,10 @@
+{
+  "eval_id": 4,
+  "eval_name": "eval-headless-mfa-device-flow",
+  "prompt": "gw lagi coba connect akun outlook company gw ke mail client di linux server (headless, gaada browser gui), pas auth flow jalan dia minta approve notification di hp gw (microsoft authenticator), tp servernya sendiri kejebak nunggu terus/timeout krn ga ada display buat browser interactive login. gimana cara nyelesaiin ini?",
+  "assertions": [
+    "The response recognizes the server is headless and does not have a browser available for interactive login",
+    "The response suggests an approach that does not require opening an interactive browser session on the headless server itself, such as a device code / device authorization grant flow, or authenticating on another machine and transferring the token",
+    "The response does not ask the user for their password"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "The response identifies that client_id is a URL/metadata endpoint rather than a valid registered client_id",
+      "passed": true,
+      "evidence": "Line 9: 'client_id-nya ... Ini malah berupa link ke file JSON (client-metadata.json)... setau gua Google belum support cara ini'"
+    },
+    {
+      "text": "The response does not ask the user for their password or any account credentials",
+      "passed": true,
+      "evidence": "No part of the response asks for password, OTP, or credentials"
+    },
+    {
+      "text": "The response gives a concrete next step involving registering the app in a provider developer console (e.g., Google Cloud Console) to obtain a valid client_id",
+      "passed": false,
+      "evidence": "Line 21 only vaguely says the root cause is 'cara mereka daftarin OAuth client ke Google' and suggests escalating to IT/dev — it never names Google Cloud Console or gives the concrete registration step the with_skill version gives"
+    },
+    {
+      "text": "The response does not claim to have already opened a browser or logged into the account without user confirmation",
+      "passed": true,
+      "evidence": "Response only gives diagnostic advice, never claims to have taken any action on the user's behalf"
+    }
+  ],
+  "summary": { "passed": 3, "failed": 1, "total": 4, "pass_rate": 0.75 },
+  "timing": { "total_duration_seconds": 47.2 },
+  "eval_feedback": {
+    "overall": "Baseline is close but misses the concrete actionable pointer (Google Cloud Console) — stays at 'escalate to IT/dev' without naming what they need to do there."
+  }
+}

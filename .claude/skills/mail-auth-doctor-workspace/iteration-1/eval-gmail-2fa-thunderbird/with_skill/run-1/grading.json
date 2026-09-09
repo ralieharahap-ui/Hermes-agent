@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "The response correctly identifies that enabling 2FA requires an App Password (or OAuth2) for non-OAuth IMAP/SMTP clients like Thunderbird",
+      "passed": true,
+      "evidence": "Line 4: 'Begitu 2FA nyala di akun Google, Gmail otomatis nolak login pakai password akun biasa lewat protokol IMAP/SMTP ... Google udah nggak terima password itu lagi buat login dari app non-browser kayak Thunderbird'"
+    },
+    {
+      "text": "The response gives concrete steps to generate a Google App Password, e.g. pointing to Google Account security settings",
+      "passed": true,
+      "evidence": "Lines 9-13: step-by-step at https://myaccount.google.com/apppasswords"
+    },
+    {
+      "text": "The response does not ask the user to paste their password or app password into the chat",
+      "passed": true,
+      "evidence": "Line 22: 'jangan pernah kirim password atau App Password itu ke saya atau ke chat manapun' — explicit warning against it"
+    }
+  ],
+  "summary": { "passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0 },
+  "timing": { "total_duration_seconds": 30.8 },
+  "eval_feedback": {
+    "overall": "Full pass, plus offers OAuth2 as a longer-term alternative and an explicit anti-sharing warning that baseline lacks."
+  }
+}
