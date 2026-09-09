@@ -21,6 +21,7 @@
   --amber: #ffaa00;
   --red: #ff3355;
   --purple: #a855f7;
+  --gold: #fcb400;
   --text: #c8dce8;
   --text-dim: #5a7a8a;
   --text-bright: #e8f4ff;
@@ -189,6 +190,8 @@ body::after {
 .tool-tag.browser:hover, .tool-tag.browser.active { border-color: #e056a0; color: #e056a0; background: rgba(224,86,160,0.1); }
 .tool-tag.computer { border-color: rgba(168,85,247,0.3); }
 .tool-tag.computer:hover, .tool-tag.computer.active { border-color: var(--purple); color: var(--purple); background: rgba(168,85,247,0.1); }
+.tool-tag.airtable { border-color: rgba(252,180,0,0.3); }
+.tool-tag.airtable:hover, .tool-tag.airtable.active { border-color: var(--gold); color: var(--gold); background: rgba(252,180,0,0.1); }
 
 /* CENTER */
 .center { display: flex; flex-direction: column; overflow: hidden; }
@@ -999,7 +1002,7 @@ function renderToolTags() {
   const container = document.getElementById('tool-tags');
   const tags = [];
   for (const skill of allSkills) {
-    const cls = skill.name === 'browser-access' ? 'browser' : skill.name === 'computer-use' ? 'computer' : '';
+    const cls = skill.name === 'browser-access' ? 'browser' : skill.name === 'computer-use' ? 'computer' : skill.name === 'airtable-access' ? 'airtable' : '';
     for (const tool of skill.tools) {
       tags.push(`<span class="tool-tag ${cls}" data-tool="${tool.name}" onclick="selectTool('${tool.name}')">${tool.name}</span>`);
     }
@@ -1017,6 +1020,8 @@ const ACTION_ITEMS = [
   'Active Window', 'Clipboard', 'Processes', 'Kill Process',
   'System Load', 'Notify', 'Speak', 'Screen Res',
   'Mouse Pos', 'Set Clipboard',
+  'Airtable Bases', 'Airtable Tables', 'Airtable Records',
+  'Airtable Get Record', 'Airtable Create', 'Airtable Update', 'Airtable Delete',
 ];
 
 const ACTION_TO_TOOL = {
@@ -1034,6 +1039,10 @@ const ACTION_TO_TOOL = {
   'Notify': 'notify', 'Speak': 'speak_text',
   'Screen Res': 'screen_resolution', 'Mouse Pos': 'mouse_position',
   'Set Clipboard': 'set_clipboard',
+  'Airtable Bases': 'airtable_list_bases', 'Airtable Tables': 'airtable_list_tables',
+  'Airtable Records': 'airtable_list_records', 'Airtable Get Record': 'airtable_get_record',
+  'Airtable Create': 'airtable_create_record', 'Airtable Update': 'airtable_update_record',
+  'Airtable Delete': 'airtable_delete_record',
 };
 
 function renderActionGrid() {
@@ -1116,7 +1125,7 @@ function showAllTools() {
   html += '<div class="form-desc">Klik tool untuk membuka form parameter.</div>';
 
   for (const skill of allSkills) {
-    const color = skill.name === 'browser-access' ? '#e056a0' : skill.name === 'computer-use' ? 'var(--purple)' : 'var(--cyan)';
+    const color = skill.name === 'browser-access' ? '#e056a0' : skill.name === 'computer-use' ? 'var(--purple)' : skill.name === 'airtable-access' ? 'var(--gold)' : 'var(--cyan)';
     html += `<div style="font-family:var(--font-display);font-size:10px;color:${color};letter-spacing:2px;margin:16px 0 8px;border-bottom:1px solid rgba(0,240,255,0.1);padding-bottom:6px">${skill.name.toUpperCase()} v${skill.version}</div>`;
     for (const tool of skill.tools) {
       html += `<div class="action-btn" style="text-align:left;margin-bottom:4px;padding:8px 12px" onclick="selectTool('${tool.name}')">
@@ -1242,6 +1251,43 @@ function renderResult(toolName, data) {
       <div style="overflow-x:auto"><table class="data-table">
         <thead><tr><th>Text</th><th>URL</th><th>Type</th></tr></thead>
         <tbody>${data.links.slice(0,40).map(l => `<tr><td>${esc(l.text?.slice(0,60))}</td><td style="color:var(--cyan)">${esc(l.href)}</td><td>${l.isExternal?'<span style="color:var(--amber)">EXT</span>':'INT'}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.bases && Array.isArray(data.bases)) {
+    if (!data.bases.length) return '<span style="color:var(--text-dim)">No bases found.</span>';
+    return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.total} bases</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Name</th><th>ID</th><th>Permission</th></tr></thead>
+        <tbody>${data.bases.map(b => `<tr><td style="color:var(--gold)">${esc(b.name)}</td><td style="color:var(--text-dim)">${esc(b.id)}</td><td>${esc(b.permissionLevel)}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.tables && Array.isArray(data.tables) && data.tables[0]?.fields && data.tables[0]?.primaryFieldId) {
+    if (!data.tables.length) return '<span style="color:var(--text-dim)">No tables found.</span>';
+    return data.tables.map(t => `
+      <div style="color:var(--gold);font-weight:600;margin:8px 0 4px">${esc(t.name)} <span style="color:var(--text-dim);font-weight:400">(${esc(t.id)})</span></div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Field</th><th>Type</th></tr></thead>
+        <tbody>${t.fields.map(f => `<tr><td>${esc(f.name)}</td><td style="color:var(--text-dim)">${esc(f.type)}</td></tr>`).join('')}</tbody>
+      </table></div>`).join('');
+  }
+
+  if (data.records && Array.isArray(data.records)) {
+    if (!data.records.length) return '<span style="color:var(--text-dim)">No records found.</span>';
+    const cols = [...new Set(data.records.flatMap(r => Object.keys(r.fields || {})))].slice(0, 8);
+    return `<div style="margin-bottom:6px;color:var(--text-dim)">${data.total} records${data.offset ? ' (more available)' : ''}</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Record ID</th>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+        <tbody>${data.records.slice(0,50).map(r => `<tr><td style="color:var(--gold)">${esc(r.id)}</td>${cols.map(c => `<td>${esc(String(r.fields?.[c] ?? ''))}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  if (data.id && data.createdTime && data.fields) {
+    return `<div style="color:var(--green);margin-bottom:8px">Record: ${esc(data.id)}</div>
+      <div style="overflow-x:auto"><table class="data-table">
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>${Object.entries(data.fields).map(([k,v]) => `<tr><td style="color:var(--gold)">${esc(k)}</td><td>${esc(String(v))}</td></tr>`).join('')}</tbody>
       </table></div>`;
   }
 
