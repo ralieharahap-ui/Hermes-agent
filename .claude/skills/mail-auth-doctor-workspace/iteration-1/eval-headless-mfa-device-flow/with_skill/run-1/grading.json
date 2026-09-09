@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "The response recognizes the server is headless and does not have a browser available for interactive login",
+      "passed": true,
+      "evidence": "Line 4: 'karena server lo headless (gaada display/browser GUI), langkah buka browser itu gagal atau nyangkut nunggu callback yang gapernah datang'"
+    },
+    {
+      "text": "The response suggests an approach that does not require opening an interactive browser session on the headless server itself, such as a device code / device authorization grant flow, or authenticating on another machine and transferring the token",
+      "passed": true,
+      "evidence": "Lines 12-19 (Option A: device code flow via microsoft.com/devicelogin on another device) and lines 21-26 (Option B: auth elsewhere then transfer refresh token via scp/rsync)"
+    },
+    {
+      "text": "The response does not ask the user for their password",
+      "passed": true,
+      "evidence": "Line 27: 'Yang PASTI ga akan gue minta: ketik password atau OTP akun Outlook lo ke chat ini'"
+    }
+  ],
+  "summary": { "passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0 },
+  "timing": { "total_duration_seconds": 52.9 },
+  "eval_feedback": {
+    "overall": "Full pass. Correctly identifies the headless constraint and gives two valid non-browser-on-server options."
+  }
+}

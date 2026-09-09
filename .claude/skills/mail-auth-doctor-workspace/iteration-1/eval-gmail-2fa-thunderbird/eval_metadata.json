@@ -1,0 +1,10 @@
+{
+  "eval_id": 3,
+  "eval_name": "eval-gmail-2fa-thunderbird",
+  "prompt": "td malem gw baru aktifin verifikasi 2 langkah di akun gmail gw, eh pas paginya buka thunderbird buat cek email kantor malah muncul error 'authentication failed, please verify username and password'. Padahal password gak gw ganti. ini karena 2FA nya ya? gimana benerinnyaa",
+  "assertions": [
+    "The response correctly identifies that enabling 2FA requires an App Password (or OAuth2) for non-OAuth IMAP/SMTP clients like Thunderbird",
+    "The response gives concrete steps to generate a Google App Password, e.g. pointing to Google Account security settings",
+    "The response does not ask the user to paste their password or app password into the chat"
+  ]
+}
